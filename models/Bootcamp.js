@@ -95,10 +95,18 @@ const BootcampSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    required: true,
+    ref: 'User'
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 })
 
 //create bootcamp slug from name
@@ -122,4 +130,20 @@ BootcampSchema.pre('save', async function (next) {
   }
   next()
 })
+
+//set reverse virtual, gets items that include localField
+//set name of virtual
+//give schema name to be searched, this.property to identify, which field to check, get all that match
+BootcampSchema.virtual('courses', {
+  ref: 'Course',
+  localField: '_id',
+  foreignField: 'bootcamp',
+  justOne: false
+})
+
+BootcampSchema.pre('remove', async function (next) {
+  await this.model('Course').deleteMany({ bootcamp: this._id});
+  next();
+})
+
 module.exports = mongoose.model('Bootcamp', BootcampSchema)

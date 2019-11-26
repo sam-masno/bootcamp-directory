@@ -13,7 +13,6 @@ const options = {
   // apiKey: 'BnxZxOgDmRD45OdtHvujWfDHaqjlstLA', // for Mapquest, OpenCage, Google Premier
   formatter: null         // 'gpx', 'string', ...
 };
-console.log(options)
 
 const geocoder = NodeGeocoder(options);
 

@@ -1,36 +1,47 @@
 const express = require('express');
 const router = express.Router();
+const Bootcamp = require('../models/Bootcamp.js');
+const advancedResults = require('../middleware/advancedResults.js');
 const {
   getBootcamps,
   getBootcamp,
   updateBootcamp,
   deleteBootcamp,
-  postBootcamp
-} = require('../controllers/bootcamp.js');
+  postBootcamp,
+  searchRadius,
+  uploadPhoto
+} = require('../controllers/bootcampsController.js');
+const { protect, authorize } = require('../middleware/auth.js');
+
+//routers for redirecting to other areas
+const courseRouter = require('./courses');
+const reviewsRouter = require('./reviews');
+
+//redirect to courses
+router.use('/:bootcampId/courses', courseRouter)
+
+//redirect to reviews
+router.use('/:bootcampId/reviews', reviewsRouter)
 
 
-//get all bootcamps
-router.get('/',(req, res, next) => {
-  getBootcamps(req, res, next)
-})
+router.route('/')
+.get(advancedResults(Bootcamp, 'courses'),getBootcamps)
+.post(protect, authorize('publisher', 'admin'), postBootcamp)
 
 
 //get a single bootcamp
-router.get('/:id',(req, res, next) => {
-  getBootcamp(req, res, next)
-})
+router.route('/:id')
+.get(getBootcamp)
+.put(protect, authorize('publisher', 'admin'), updateBootcamp)
+.delete(protect, authorize('publisher', 'admin'), deleteBootcamp);
 
-//creat a bootcamp
-router.post('/',(req, res, next) => {
-  postBootcamp(req, res, next)
-})
+//search bootcamps by zipcode and distance
+router.route('/radius/:zipcode/:distance')
+.get(searchRadius)
 
-router.put('/:id',(req, res, next) => {
-  updateBootcamp(req, res, next)
-});
+//upload Photo
+router.route('/:id/photo')
+.put(protect, authorize('publisher', 'admin'), uploadPhoto)
 
-router.delete('/:id',(req, res, next) => {
-  deleteBootcamp(req, res, next)
-})
 
 module.exports = router;

@@ -27,6 +27,9 @@ const ReviewSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   }
+},{
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 })
 
 ReviewSchema.statics.getAverageRating = async function (bootcampId) {
@@ -58,5 +61,17 @@ ReviewSchema.post('save', function () {
 ReviewSchema.pre('remove', function () {
   this.constructor.getAverageRating(this.bootcamp)
 })
+
+//set reverse virtual, gets items that include localField
+//set name of virtual
+//give schema name to be searched, this.property to identify, which field to check, get all that match
+ReviewSchema.virtual('bootcampInfo', {
+  ref: 'Bootcamp',
+  localField: 'bootcamp',
+  foreignField: 'id',
+  justOne: true,
+  select: 'name'
+})
+
 
 module.exports = mongoose.model('review', ReviewSchema)

@@ -8,7 +8,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '../config/config.env')
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please enter name.']
+    required: [true, 'Please enter name.'],
+    minLength: 5
   },
   email: {
     type: String,
@@ -26,7 +27,7 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please add a passer'],
+    required: [true, 'Please include a password'],
     minLength: 6,
     select: false
   },
@@ -91,6 +92,16 @@ UserSchema.pre('remove', async function (next) {
 UserSchema.virtual('bootcamps', {
   ref: 'Bootcamp',
   localField: '_id',
+  foreignField: 'user',
+  justOne: false
+})
+
+//set reverse virtual, gets items that include localField
+//set name of virtual
+//give schema name to be searched, this.property to identify, which field to check, get all that match
+UserSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: 'id',
   foreignField: 'user',
   justOne: false
 })

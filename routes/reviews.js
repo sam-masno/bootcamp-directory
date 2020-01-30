@@ -6,7 +6,9 @@ const {
   getReview,
   addReview,
   editReview,
-  deleteReview } = require('../controllers/reviewsController.js');
+  deleteReview,
+  reviewsByUser
+} = require('../controllers/reviewsController.js');
 const advancedResults = require('../middleware/advancedResults.js');
 const {
   protect,
@@ -23,6 +25,8 @@ router.route('/')
 // get reviews for single bootcamp
 // router.route('')
 //   .get(getBootcampReviews)
+
+router.get('/user/:id', reviewsByUser)
 
 router.get('/:id', getReview)
 

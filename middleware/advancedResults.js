@@ -1,6 +1,7 @@
 const advancedResults = (model, populate) => async (req, res, next) => {
   //handle queries and filtering
   let query;
+  // console.log(`${req.original}${req.url}`)
   // console.log(req.params)
   //copy req.query and declare array of reserved fields
   let reqQuery = { ...req.query };
@@ -13,7 +14,8 @@ const advancedResults = (model, populate) => async (req, res, next) => {
   let queryStr = JSON.stringify(reqQuery);
 
   // replace url operators with mongoose operators
-  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+  //put in url in brackets after desired field: averageCost[lte]=...
+  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in|all)\b/g, match => `$${match}`);
 
   // converty querystr back to json and pass as search param, assign to query
   query = model.find(JSON.parse(queryStr));
@@ -23,7 +25,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
   if(req.query.select) {
     const fields = req.query.select.split(',').join(' ')
     query = query.select(fields);
-    console.log(fields);
+    // console.log(fields);
   }
 
   //accept sort parameter if passed in
@@ -41,12 +43,11 @@ const advancedResults = (model, populate) => async (req, res, next) => {
 
   //make pagination and limit
   const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 100;
+  const limit = parseInt(req.query.limit, 10) || 5;
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
-  const total = await model.countDocuments();
-
-  // skip to selected page
+  const total = await model.countDocuments(query);
+  const last = Math.ceil(total / limit)
   query.skip(startIndex).limit(limit);
 
   // return query as models
@@ -54,22 +55,30 @@ const advancedResults = (model, populate) => async (req, res, next) => {
 
   const pagination = {};
 
-  if(endIndex < total) {
-    pagination.next = {
-      page: page + 1,
-      limit
-    }
+  pagination.queryStr = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  pagination.limit = limit;
+  pagination.page = page;
+  pagination.last = last;
+  pagination.total = total;
+  // pagination.total = total;
+  pagination.count = results.length;
+
+  if(endIndex + limit < total) {
+    pagination.twoForward = page + 2
   }
-  if(startIndex > 0) {
-    pagination.previous = {
-      page: page -1,
-      limit
-    }
+  if(endIndex < total ) {
+    pagination.next = page + 1;
   }
+  if(page > 1) {
+    pagination.previous = page - 1;
+  }
+  if(page >= 3) {
+    pagination.twoPrevious = page - 2;
+  }
+
 
   res.advancedResults = {
     success: true,
-    count: results.length,
     pagination,
     data: results
   }

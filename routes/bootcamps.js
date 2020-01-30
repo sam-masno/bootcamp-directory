@@ -9,7 +9,8 @@ const {
   deleteBootcamp,
   postBootcamp,
   searchRadius,
-  uploadPhoto
+  uploadPhoto,
+  getGeocode
 } = require('../controllers/bootcampsController.js');
 const { protect, authorize } = require('../middleware/auth.js');
 
@@ -28,16 +29,20 @@ router.route('/')
 .get(advancedResults(Bootcamp, 'courses'),getBootcamps)
 .post(protect, authorize('publisher', 'admin'), postBootcamp)
 
-
 //get a single bootcamp
 router.route('/:id')
 .get(getBootcamp)
 .put(protect, authorize('publisher', 'admin'), updateBootcamp)
 .delete(protect, authorize('publisher', 'admin'), deleteBootcamp);
 
+router.route('/location/:address')
+.get(protect, getGeocode)
+
 //search bootcamps by zipcode and distance
-router.route('/radius/:zipcode/:distance')
+// experiment to search lat and lng
+router.route('/radius/:lat/:lng/:distance')
 .get(searchRadius)
+
 
 //upload Photo
 router.route('/:id/photo')

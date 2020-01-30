@@ -1,7 +1,9 @@
 const Bootcamp = require('../models/Bootcamp.js');
+const Review = require('../models/Review.js');
 const ErrorResponse = require('../utils/errorResponse.js')
 const asyncHandler = require('../middleware/async.js');
 const geocoder = require('../utils/geocoder.js');
+const getGeoCode = require('../utils/getGeoCode.js');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../config/config.env') });
 
@@ -89,6 +91,7 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   }
 
   await bootcamp.remove();
+  await Review.deleteMany({ bootcamp: id })
 
   res.status(200).json({ success: true, message: 'Bootcamp deleted' })
 })
@@ -98,18 +101,23 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
 //@access Public
 exports.searchRadius = asyncHandler(async (req, res, next) => {
   //pull zip and dist form params
-  const { zipcode, distance } = req.params;
+  // v1
+  // const { zipcode, distance } = req.params;
 
+  //v2
+  const { lat, lng, distance } = req.params;
+
+  // v1
   // get lat and long from
-  const loc = await geocoder.geocode(zipcode);
-  const lat = loc[0].latitude;
-  const long = loc[0].longitude;
+  // const loc = await geocoder.geocode(zipcode);
+  // const lat = loc[0].latitude;
+  // const long = loc[0].longitude;
 
   //divide distance by radius of earth
-  const radius = distance / 6371;
+  const radius = distance / 3958.8;
   //make mongo query
   const bootcamps = await Bootcamp.find({
-    location: { $geoWithin: { $centerSphere: [ [ long, lat ], radius ] } }
+    location: { $geoWithin: { $centerSphere: [ [ lng, lat ], radius ] } }
   })
 
   res.status(200).json({
@@ -176,4 +184,18 @@ exports.uploadPhoto = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, message: 'Photo uploaded.' })
 
   })
+})
+
+//@desc   get geocode for location entered by user
+//@route  GET /api/v1/bootcamps/search
+//@access Private
+exports.getGeocode = asyncHandler( async ( req,res,next ) => {
+  const { address } = req.params;
+  const location = await getGeoCode(address);
+  const {success, lat, lng} = location;
+  if(success) {
+    res.status(200).json({ success, lat, lng})
+  } else {
+    res.status(404).json({ success, lat, lng })
+  }
 })

@@ -1,4 +1,6 @@
 const User = require('../models/User.js');
+const Course = require('../models/Course.js');
+const Review = require('../models/Review.js');
 const ErrorResponse = require('../utils/errorResponse.js')
 const asyncHandler = require('../middleware/async.js');
 const sendEmail = require('../utils/emailer.js');
@@ -59,7 +61,19 @@ exports.login = asyncHandler(async (req, res, next) => {
 //@route api/v1/auth/me
 //@Access private
 exports.getMe = asyncHandler(async(req, res, next) => {
-  const user = await User.findById(req.user._id);
+  let user = await User.findById(req.user._id)
+    .populate({path: 'bootcamps'})
+  const courses = await Course.find({ user: req.user._id });
+  const reviews = await Review.find({ user: req.user._id }).populate({path:'bootcamp', select:'name'})
+  // reviews = reviews.populate({path:'bootcampInfo'}).select('name')
+
+  //convert user and reviews to json to modify
+  user = user.toJSON()
+  // reviews = reviews.toJSON();
+
+  //attach courses and review to user object
+  user.reviews = [...reviews];
+  user.courses = [...courses];
   res.status(200).json({
     sucess: true,
     data: user

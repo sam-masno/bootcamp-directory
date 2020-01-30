@@ -132,6 +132,8 @@ exports.deleteReview = asyncHandler(async(req, res, next) => {
 //@access   Public
 //not employed atm
 exports.reviewsByUser = asyncHandler(async(req, res, next) => {
-  const reviews = await Review.find({ user: req.params.userId })
+  const { id } = req.params;
+  const reviews = await Review.find({ user: id })
+  console.log(id)
   res.status(200).json({success: true, data: reviews})
 })

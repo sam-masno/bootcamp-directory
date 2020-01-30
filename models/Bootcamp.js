@@ -141,6 +141,7 @@ BootcampSchema.virtual('courses', {
   justOne: false
 })
 
+//delete course of this bootcamp on removal
 BootcampSchema.pre('remove', async function (next) {
   await this.model('Course').deleteMany({ bootcamp: this._id});
   next();

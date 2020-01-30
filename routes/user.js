@@ -4,6 +4,7 @@ const reviewsRouter = require('./reviews')
 
 //models
 const User = require('../models/User.js');
+const Bootcamp = require('../models/Bootcamp.js');
 
 //controllers
 const {
@@ -30,7 +31,7 @@ router.use(authorize('admin'))
 
 //all users
 router.route('/')
-  .get(advancedResults(User, 'bootcamps'), getUsers)
+  .get(advancedResults(Bootcamp, 'bootcamps'), getUsers)
   .post(addUser)
 
 //singe user

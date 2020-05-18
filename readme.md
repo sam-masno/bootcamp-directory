@@ -13,10 +13,10 @@ rename config/config.env.env to config/config.env
 
 Inside the new config/config.env replace environment variables to your own.
 
-## Run in dev mode
+## Run in development
 ```npm run dev```
 
-## Run in prod mode
+## Run in production
 ```npm start```
 
 To seed the database with users, bootcamps, courses and reviews with data from the "_data" folder, run the following in root folder

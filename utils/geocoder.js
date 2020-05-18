@@ -10,7 +10,6 @@ const options = {
   // Optional depending on the providers
   httpAdapter: 'https', // Default
   apiKey: process.env.GEOCODER_API_KEY,
-  // apiKey: 'BnxZxOgDmRD45OdtHvujWfDHaqjlstLA', // for Mapquest, OpenCage, Google Premier
   formatter: null         // 'gpx', 'string', ...
 };
 
